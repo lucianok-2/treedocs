@@ -1,0 +1,102 @@
+<div id="login-screen" class="gradient-bg min-h-screen flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl shadow-2xl overflow-hidden w-full max-w-md transition-all duration-300 transform hover:scale-[1.01]">
+    <div class="bg-gradient-to-r from-blue-800 to-blue-600 py-8 px-8 text-center relative">
+      <div class="absolute -top-10 left-1/2 transform -translate-x-1/2">
+        <div class="bg-white p-3 rounded-full shadow-lg floating">
+          <i class="fas fa-file-alt text-blue-600 text-3xl"></i>
+        </div>
+      </div>
+      <h1 class="text-2xl font-bold text-white mt-4">Sistema de Gestión Documental</h1>
+      <p class="text-blue-100 mt-2">Ingrese sus credenciales para continuar</p>
+    </div>
+    
+    <div class="p-8 pt-12">
+      <div class="mb-6 relative">
+        <label for="username" class="block text-gray-700 font-medium mb-2">Usuario</label>
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <i class="fas fa-user text-gray-400"></i>
+          </div>
+          <input type="text" id="username" class="w-full pl-10 pr-4 py-3 border rounded-lg input-focus-effect transition-all duration-200" placeholder="Ingrese su usuario">
+        </div>
+        <p id="username-error" class="text-red-500 text-sm mt-1 hidden"><i class="fas fa-exclamation-circle mr-1"></i> El usuario es requerido</p>
+      </div>
+      
+      <div class="mb-6 relative">
+        <label for="password" class="block text-gray-700 font-medium mb-2">Contraseña</label>
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <i class="fas fa-lock text-gray-400"></i>
+          </div>
+          <input type="password" id="password" class="w-full pl-10 pr-4 py-3 border rounded-lg input-focus-effect transition-all duration-200" placeholder="Ingrese su contraseña">
+          <button id="toggle-password" class="absolute inset-y-0 right-0 pr-3 flex items-center">
+            <i class="fas fa-eye text-gray-400 hover:text-blue-600 cursor-pointer"></i>
+          </button>
+        </div>
+        <p id="password-error" class="text-red-500 text-sm mt-1 hidden"><i class="fas fa-exclamation-circle mr-1"></i> La contraseña es requerida</p>
+      </div>
+      
+      <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center">
+          <input type="checkbox" id="remember" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+          <label for="remember" class="ml-2 block text-sm text-gray-700">Recordar sesión</label>
+        </div>
+        <a href="/api/auth/forgot-password" class="text-sm text-blue-600 hover:underline">¿Olvidó su contraseña?</a>
+      </div>
+      
+      <button id="login-btn" class="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white font-bold py-3 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 flex items-center justify-center">
+        <i class="fas fa-sign-in-alt mr-2"></i> Iniciar Sesión
+      </button>
+      
+      <div class="mt-6 text-center relative">
+        <div class="absolute inset-0 flex items-center">
+          <div class="w-full border-t border-gray-300"></div>
+        </div>
+        <div class="relative flex justify-center">
+          <span class="px-2 bg-white text-gray-500 text-sm">¿No tienes una cuenta?</span>
+        </div>
+      </div>
+      
+      <div class="mt-4 text-center">
+        <a href="/register" class="inline-block px-4 py-2 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors duration-200">
+          Registrar nuevo usuario
+        </a>
+      </div>
+    </div>
+    
+    <div class="bg-gray-50 px-8 py-4 text-center border-t">
+      <p class="text-gray-500 text-sm">© 2023 Sistema de Gestión Documental. Todos los derechos reservados.</p>
+    </div>
+  </div>
+</div>
+
+<style>
+  .gradient-bg {
+    background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 50%, #3b82f6 100%);
+  }
+  .input-focus-effect:focus {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+    border-color: #3b82f6;
+  }
+  .shake {
+    animation: shake 0.5s;
+  }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+    20%, 40%, 60%, 80% { transform: translateX(5px); }
+  }
+  .floating {
+    animation: floating 3s ease-in-out infinite;
+  }
+  @keyframes floating {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
+  }
+</style>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+
+<script src="login.js"></script>

@@ -1,0 +1,183 @@
+{{!< layouts/main }}
+<div class="ml-64">
+   <div id="upload-documents" class="p-8">
+    <div class="flex items-center justify-between mb-6">
+      <h2 class="text-2xl font-bold text-gray-800">Subir Documentos</h2>
+      <div class="flex items-center space-x-2">
+        <span class="text-sm text-gray-500">Estado: </span>
+        <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+          <i class="fas fa-circle mr-1"></i> Conectado
+        </span>
+      </div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow-md p-6">
+      <!-- Selector de predio (con diseño mejorado pero misma funcionalidad) -->
+      <div class="mb-6">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+          <i class="fas fa-home mr-2 text-blue-500"></i> Seleccionar Predio
+        </h3>
+        <div class="max-w-md">
+          <label for="property-select" class="block text-gray-700 font-medium mb-2 required-field">Predio</label>
+          <select id="property-select" class="w-full px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500" required>
+            <option value="">Cargando predios...</option>
+          </select>
+          <p class="mt-2 text-sm text-gray-500">Seleccione un predio para continuar.</p>
+        </div>
+      </div>
+
+      <!-- Property Info Preview Section -->
+      <div id="property-preview" class="mb-6 border border-gray-200 p-4 rounded-lg bg-gray-50 hidden">
+        <h3 class="text-lg font-semibold text-gray-700 mb-3">Detalles del Predio Seleccionado:</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+          <div><strong>ID del Predio:</strong> <span id="preview-id">--</span></div>
+          <div><strong>Nombre:</strong> <span id="preview-name">--</span></div>
+          <div><strong>Dirección:</strong> <span id="preview-address">--</span></div>
+          <div><strong>Propietario:</strong> <span id="preview-owner">--</span></div>
+          <!-- Add more fields as necessary, e.g., Matricula, No. Catastral -->
+        </div>
+      </div>
+
+      <!-- Continuar Button -->
+      <div class="mb-6">
+        <button id="next-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 flex items-center" disabled>
+          <i class="fas fa-arrow-right mr-2"></i>Continuar
+        </button>
+      </div>
+
+      <!-- Botón de Carga Masiva (remains on main page) -->
+      <div class="mb-6">
+          <button id="bulk-upload-button" class="hidden bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 flex items-center">
+            <i class="fas fa-cloud-upload-alt mr-2"></i> Carga Masiva de Documentos
+          </button>
+      </div>
+
+    </div> <!-- End of main page content bg-white -->
+    
+    <!-- Modal para subir documentos -->
+    <div id="upload-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden flex items-center justify-center z-50 p-4">
+      <div class="bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[95vh] flex flex-col">
+        <div class="border-b px-6 py-4 flex justify-between items-center sticky top-0 bg-white z-10">
+          <h3 class="text-xl font-semibold text-gray-800 flex items-center">
+            <i class="fas fa-cloud-upload-alt mr-3 text-blue-500"></i>
+            Subir Documento para: <span id="modal-property-name" class="ml-2 font-bold text-blue-600">--</span>
+          </h3>
+          <button id="close-modal" class="text-gray-500 hover:text-gray-700 text-2xl">
+            &times;
+          </button>
+        </div>
+        
+        <form id="upload-form" class="p-6 space-y-6 overflow-y-auto flex-grow">
+          <input type="hidden" id="property-id">      
+          <input type="hidden" id="document-type-id"> 
+          <input type="hidden" id="document-type-name">
+
+          <!-- Document Type Select -->
+          <div class="mb-4">
+            <label for="document-type-select" class="block text-gray-700 font-medium mb-2 required-field">Tipo de Documento</label>
+            <select id="document-type-select" class="w-full px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500" required>
+              <option value="">Seleccione un tipo de documento...</option>
+              <!-- Options will be populated dynamically by JavaScript -->
+            </select>
+          </div>
+
+          <!-- Dynamic Fields Container -->
+          <div id="dynamic-document-fields-container" class="space-y-4 mb-4 p-4 border border-gray-200 rounded-md bg-gray-50 hidden">
+            <h4 class="text-md font-semibold text-gray-700 mb-2">Campos Específicos del Documento:</h4>
+            <!-- Dynamically generated form fields will be injected here by JavaScript -->
+            <p class="text-sm text-gray-500 italic">Asegúrese de completar todos los campos requeridos.</p>
+          </div>
+          
+          <!-- Static Fields: Responsable & Descripción -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+            <div>
+              <label for="document-responsible" class="block text-gray-700 font-medium mb-2 required-field">Responsable</label>
+              <input type="text" id="document-responsible" class="w-full px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Nombre completo del responsable" required>
+              <p class="mt-1 text-xs text-gray-500">Persona responsable de la veracidad del documento.</p>
+            </div>
+            <div>
+              <label for="document-description" class="block text-gray-700 font-medium mb-2">Descripción</label>
+              <textarea id="document-description" class="w-full px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500" rows="3" placeholder="Descripción o notas adicionales sobre el documento"></textarea>
+            </div>
+          </div>
+
+          <!-- Dropzone File Upload -->
+          <div class="mb-4">
+            <label class="block text-gray-700 font-medium mb-2 required-field">Archivo</label>
+            <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center transition-colors duration-200 hover:border-blue-500" id="dropzone">
+              <input type="file" id="file-input" class="hidden" accept=".pdf,.jpg,.jpeg,.png" required>
+              <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+              </svg>
+              <p class="mt-2 text-sm text-gray-600">Arrastre y suelte archivos aquí o</p>
+              <button type="button" id="browse-files" class="mt-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors duration-200 text-sm font-medium">
+                <i class="fas fa-search mr-2"></i>Buscar archivos
+              </button>
+              <div id="selected-file" class="mt-4 hidden">
+                <span class="inline-flex items-center bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+                  <i class="fas fa-file-alt mr-2"></i>
+                  <span id="file-name"></span>
+                  <button type="button" id="remove-file" class="ml-2 text-blue-600 hover:text-blue-800 focus:outline-none">
+                    <i class="fas fa-times-circle"></i>
+                  </button>
+                </span>
+              </div>
+              <p class="mt-2 text-xs text-gray-500">Formatos permitidos: PDF, JPG, PNG (Max 10MB)</p>
+            </div>
+          </div>
+          
+          <!-- AI Processing Button (Optional, can be shown based on file type) -->
+          <div class="text-center mb-4">
+             <button type="button" id="process-ai-btn" class="hidden bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center mx-auto">
+                <i class="fas fa-microchip mr-2"></i>Procesar con IA (OCR)
+             </button>
+             <div id="ocr-loading-indicator" class="hidden text-purple-600 mt-2">
+                <i class="fas fa-spinner fa-spin mr-2"></i> Procesando...
+             </div>
+          </div>
+
+        </form> <!-- End of upload-form -->
+        
+        <div class="border-t px-6 py-4 bg-gray-50 sticky bottom-0 z-10">
+          <div class="flex justify-between items-center">
+            <div class="text-sm text-gray-500">
+              <i class="fas fa-info-circle mr-1"></i> Los campos con <span class="text-red-500">*</span> son obligatorios.
+            </div>
+            <div class="flex space-x-3">
+              <button type="button" id="cancel-modal-upload" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-lg transition-colors duration-200 flex items-center">
+                <i class="fas fa-times mr-2"></i>Cancelar
+              </button>
+              <button type="submit" form="upload-form" id="submit-upload" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 flex items-center">
+                <i class="fas fa-cloud-upload-alt mr-2"></i>Subir Documento
+              </button>
+            </div>
+          </div>
+        </div>
+      </div> <!-- End of modal content bg-white -->
+    </div> <!-- End of upload-modal -->
+    
+    <!-- The new Bulk Upload Modal -->
+    <div id="bulk-upload-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-lg p-6 relative">
+            <button id="close-bulk-upload-modal" class="absolute top-0 right-0 mt-4 mr-4 text-2xl font-semibold leading-none hover:text-gray-700">&times;</button>
+            <h3 class="text-xl font-semibold text-gray-800 mb-4">Carga Masiva de Documentos PDF</h3>
+            
+            <input type="file" id="bulk-file-input" accept="application/pdf" multiple class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none mb-4">
+            
+            <div id="bulk-upload-feedback" class="mb-4 p-4 border rounded-lg text-sm hidden"></div>
+            
+            <div class="flex justify-end space-x-2">
+                <button id="cancel-bulk-upload" class="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400">Cancelar</button>
+                <button id="process-bulk-files-button" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Procesar Archivos</button>
+            </div>
+        </div>
+    </div>
+  </div>
+</div>
+<script src="/firebase-config.js"></script>
+<script src="/gemini-config.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-storage-compat.js"></script>
+<script src="/js/modals.js"></script>
+<script src="/upload.js"></script>
+<script defer src="/js/bulk-upload.js"></script>

@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Carga de Documentos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        
+        /* Custom file input styling */
+        .file-input {
+            opacity: 0;
+            width: 0.1px;
+            height: 0.1px;
+            position: absolute;
+        }
+        
+        .file-input-label {
+            position: relative;
+            width: 100%;
+            height: 150px;
+            border: 2px dashed #d1d5db;
+            border-radius: 0.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .file-input-label:hover {
+            border-color: #6366f1;
+            background-color: #f8fafc;
+        }
+        
+        .file-input-label.dragover {
+            border-color: #6366f1;
+            background-color: #e0e7ff;
+        }
+        
+        .file-name {
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+            color: #6b7280;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            overflow: hidden;
+            max-width: 80%;
+        }
+        
+        /* Modal animation */
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .modal-animation {
+            animation: modalFadeIn 0.3s ease-out forwards;
+        }
+        
+        /* Backdrop effect */
+        .backdrop {
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Property Selection Card -->
+        <div class="max-w-2xl mx-auto bg-white rounded-xl shadow-md overflow-hidden">
+            <div class="p-8">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">Carga de Documentos</h2>
+                    <div class="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm font-medium">
+                        Paso 1 de 2
+                    </div>
+                </div>
+                
+                <p class="text-gray-600 mb-6">Seleccione el predio al cual desea asociar los documentos.</p>
+                
+                <div class="mb-6">
+                    <label for="property-select" class="block text-sm font-medium text-gray-700 mb-2">
+                        Predio <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative">
+                        <select id="property-select" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white shadow-sm sm:text-sm transition">
+                            <option value="" disabled selected>-- Seleccione un predio --</option>
+                            <option value="PRED-001">Predio Las Acacias (PRED-001)</option>
+                            <option value="PRED-002">Predio Los Pinos (PRED-002)</option>
+                            <option value="PRED-003">Predio Monteverde (PRED-003)</option>
+                            <option value="PRED-004">Predio Altos del Mar (PRED-004)</option>
+                            <option value="PRED-005">Predio Villa Sol (PRED-005)</option>
+                        </select>
+                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                            <i class="fas fa-chevron-down text-gray-400"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end">
+                    <button id="next-btn" class="px-6 py-2.5 bg-indigo-600 text-white font-medium text-sm leading-tight uppercase rounded-lg shadow-md hover:bg-indigo-700 hover:shadow-lg focus:bg-indigo-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-indigo-800 active:shadow-lg transition duration-150 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                        Continuar <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Property Info Preview (hidden by default) -->
+        <div id="property-preview" class="max-w-2xl mx-auto bg-white rounded-xl shadow-md overflow-hidden mt-6 hidden">
+            <div class="p-6">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-semibold text-gray-700">Datos del Predio Seleccionado</h3>
+                    <button id="change-property" class="text-sm text-indigo-600 hover:text-indigo-800 font-medium">
+                        Cambiar predio
+                    </button>
+                </div>
+                <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-sm text-gray-500">Identificación</p>
+                        <p id="preview-id" class="font-medium">--</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Nombre</p>
+                        <p id="preview-name" class="font-medium">--</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Dirección</p>
+                        <p id="preview-address" class="font-medium">--</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Propietario</p>
+                        <p id="preview-owner" class="font-medium">--</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Document Upload Modal (initially hidden) -->
+    <div id="upload-modal" class="fixed inset-0 z-50 hidden">
+        <div class="backdrop absolute inset-0"></div>
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="modal-animation bg-white rounded-xl shadow-xl max-w-2xl w-full overflow-hidden">
+                <div class="p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-bold text-gray-800">Cargar Documento</h3>
+                        <button id="close-modal" class="text-gray-500 hover:text-gray-700">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="mb-6 bg-indigo-50 p-4 rounded-lg">
+                        <p class="text-sm text-indigo-800 font-medium">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            Documentos para: <span id="modal-property-name" class="font-bold">--</span>
+                        </p>
+                    </div>
+                    
+                    <form id="document-form" class="space-y-6">
+                        <div>
+                            <label for="document-type" class="block text-sm font-medium text-gray-700 mb-2">
+                                Tipo de Documento <span class="text-red-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <select id="document-type" required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white shadow-sm sm:text-sm transition">
+                                    <option value="" disabled selected>-- Seleccione un tipo --</option>
+                                    <option value="escritura">Escritura Pública</option>
+                                    <option value="contrato">Contrato</option>
+                                    <option value="licencia">Licencia Municipal</option>
+                                    <option value="permiso">Permiso de Obras</option>
+                                    <option value="certificado">Certificado de Habitabilidad</option>
+                                    <option value="tasa">Tasación</option>
+                                    <option value="otros">Otros</option>
+                                </select>
+                                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                    <i class="fas fa-chevron-down text-gray-400"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label for="responsible" class="block text-sm font-medium text-gray-700 mb-2">
+                                Responsable <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" id="responsible" required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 shadow-sm sm:text-sm transition" placeholder="Nombre del responsable">
+                        </div>
+                        
+                        <div>
+                            <label for="description" class="block text-sm font-medium text-gray-700 mb-2">
+                                Descripción
+                            </label>
+                            <textarea id="description" rows="3" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 shadow-sm sm:text-sm transition" placeholder="Breve descripción del documento"></textarea>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Documento Adjunto <span class="text-red-500">*</span>
+                            </label>
+                            <input type="file" id="file-input" class="file-input" required accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png">
+                            <label for="file-input" class="file-input-label">
+                                <i class="fas fa-cloud-upload-alt text-3xl text-indigo-500 mb-2"></i>
+                                <p class="text-gray-700 font-medium">Arrastra tu archivo aquí o haz clic para seleccionar</p>
+                                <p class="text-gray-500 text-xs mt-1">Formatos soportados: PDF, Word, Excel, JPG, PNG</p>
+                                <p id="file-name" class="file-name"></p>
+                            </label>
+                        </div>
+                        
+                        <div class="flex justify-end space-x-4 pt-4 border-t border-gray-200">
+                            <button type="button" id="cancel-upload" class="px-6 py-2.5 text-gray-700 font-medium text-sm leading-tight uppercase rounded-lg border border-gray-300 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition">
+                                Cancelar
+                            </button>
+                            <button type="submit" class="px-6 py-2.5 bg-indigo-600 text-white font-medium text-sm leading-tight uppercase rounded-lg shadow-md hover:bg-indigo-700 hover:shadow-lg focus:bg-indigo-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-indigo-800 active:shadow-lg transition duration-150 ease-in-out flex items-center">
+                                <i class="fas fa-save mr-2"></i> Guardar Documento
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Success Toast (hidden by default) -->
+    <div id="success-toast" class="fixed bottom-6 right-6 z-50 hidden">
+        <div class="bg-green-50 border border-green-200 rounded-lg shadow-lg overflow-hidden">
+            <div class="flex items-center p-4">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-check-circle text-green-500 text-xl"></i>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm font-medium text-green-800">
+                        ¡Documento cargado exitosamente!
+                    </p>
+                    <p id="toast-message" class="text-sm text-green-600 mt-1">
+                        Su documento ha sido asociado al predio.
+                    </p>
+                </div>
+                <button class="ml-auto text-green-500 hover:text-green-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="h-1 bg-green-200">
+                <div class="h-full bg-green-500 progress-bar"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Property data
+            const properties = {
+                'PRED-001': {
+                    name: 'Predio Las Acacias',
+                    address: 'Calle Principal #123, Ciudad Jardín',
+                    owner: 'Carlos Mendoza'
+                },
+                'PRED-002': {
+                    name: 'Predio Los Pinos',
+                    address: 'Avenida Central #456, Zona Norte',
+                    owner: 'María González'
+                },
+                'PRED-003': {
+                    name: 'Predio Monteverde',
+                    address: 'Calle Secundaria #789, Barrio Alto',
+                    owner: 'Inversiones Verde Ltda.'
+                },
+                'PRED-004': {
+                    name: 'Predio Altos del Mar',
+                    address: 'Avenida Costera #101, Playa Azul',
+                    owner: 'Hermanos Pérez S.A.'
+                },
+                'PRED-005': {
+                    name: 'Predio Villa Sol',
+                    address: 'Calle del Sol #202, Urbanización Bella Vista',
+                    owner: 'Lucía Fernández'
+                }
+            };
+            
+            // DOM elements
+            const propertySelect = document.getElementById('property-select');
+            const nextBtn = document.getElementById('next-btn');
+            const propertyPreview = document.getElementById('property-preview');
+            const changePropertyBtn = document.getElementById('change-property');
+            const uploadModal = document.getElementById('upload-modal');
+            const closeModalBtn = document.getElementById('close-modal');
+            const cancelUploadBtn = document.getElementById('cancel-upload');
+            const documentForm = document.getElementById('document-form');
+            const successToast = document.getElementById('success-toast');
+            const fileInput = document.getElementById('file-input');
+            const fileNameDisplay = document.getElementById('file-name');
+            const fileInputLabel = document.querySelector('.file-input-label');
+            
+            // Event listeners
+            propertySelect.addEventListener('change', updatePropertySelection);
+            nextBtn.addEventListener('click', showUploadModal);
+            changePropertyBtn.addEventListener('click', resetSelection);
+            closeModalBtn.addEventListener('click', closeModal);
+            cancelUploadBtn.addEventListener('click', closeModal);
+            documentForm.addEventListener('submit', handleFormSubmit);
+            
+            // File input handling
+            fileInput.addEventListener('change', function(e) {
+                if (e.target.files.length > 0) {
+                    fileNameDisplay.textContent = e.target.files[0].name;
+                }
+            });
+            
+            // Drag and drop functionality
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                fileInputLabel.addEventListener(eventName, preventDefaults, false);
+            });
+            
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            
+            ['dragenter', 'dragover'].forEach(eventName => {
+                fileInputLabel.addEventListener(eventName, highlight, false);
+            });
+            
+            ['dragleave', 'drop'].forEach(eventName => {
+                fileInputLabel.addEventListener(eventName, unhighlight, false);
+            });
+            
+            function highlight() {
+                fileInputLabel.classList.add('dragover');
+            }
+            
+            function unhighlight() {
+                fileInputLabel.classList.remove('dragover');
+            }
+            
+            fileInputLabel.addEventListener('drop', handleDrop, false);
+            
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                
+                if (files.length > 0) {
+                    fileInput.files = files;
+                    fileNameDisplay.textContent = files[0].name;
+                }
+            }
+            
+            // Helper functions
+            function updatePropertySelection() {
+                if (propertySelect.value) {
+                    nextBtn.disabled = false;
+                    
+                    // Update preview
+                    const propId = propertySelect.value;
+                    const propName = propertySelect.options[propertySelect.selectedIndex].text.split('(')[0].trim();
+                    
+                    document.getElementById('preview-id').textContent = propId;
+                    document.getElementById('preview-name').textContent = properties[propId].name;
+                    document.getElementById('preview-address').textContent = properties[propId].address;
+                    document.getElementById('preview-owner').textContent = properties[propId].owner;
+                    
+                    propertyPreview.classList.remove('hidden');
+                }
+            }
+            
+            function showUploadModal() {
+                if (propertySelect.value) {
+                    const propName = propertySelect.options[propertySelect.selectedIndex].text.split('(')[0].trim();
+                    document.getElementById('modal-property-name').textContent = propName;
+                    uploadModal.classList.remove('hidden');
+                    document.body.style.overflow = 'hidden';
+                }
+            }
+            
+            function closeModal() {
+                uploadModal.classList.add('hidden');
+                document.body.style.overflow = 'auto';
+            }
+            
+            function resetSelection() {
+                propertySelect.value = '';
+                nextBtn.disabled = true;
+                propertyPreview.classList.add('hidden');
+            }
+            
+            function handleFormSubmit(e) {
+                e.preventDefault();
+                
+                // Form validation
+                const form = e.target;
+                if (!form.checkValidity()) {
+                    form.reportValidity();
+                    return;
+                }
+                
+                // Simulate form submission (in a real app, you would use AJAX/Fetch)
+                setTimeout(() => {
+                    // Show success toast
+                    successToast.classList.remove('hidden');
+                    document.getElementById('toast-message').textContent = 
+                        `Documento cargado para ${propertySelect.options[propertySelect.selectedIndex].text.split('(')[0].trim()}`;
+                    
+                    // Animate progress bar
+                    const progressBar = document.querySelector('.progress-bar');
+                    progressBar.style.width = '100%';
+                    progressBar.style.transition = 'width 3s linear';
+                    
+                    // Reset form and close modal
+                    form.reset();
+                    fileNameDisplay.textContent = '';
+                    closeModal();
+                    
+                    // Hide toast after 5 seconds
+                    setTimeout(() => {
+                        successToast.classList.add('hidden');
+                        progressBar.style.width = '0';
+                        progressBar.style.transition = 'none';
+                    }, 5000);
+                }, 1000);
+            }
+            
+            // Close toast when X is clicked
+            successToast.querySelector('button').addEventListener('click', function() {
+                successToast.classList.add('hidden');
+            });
+        });
+    </script>
+</body>
+</html>

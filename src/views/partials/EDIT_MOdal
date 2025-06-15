@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Predios</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .hidden {
+            display: none;
+        }
+        .cert-code-input {
+            transition: all 0.3s ease;
+        }
+        .file-upload {
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+        .file-upload input[type="file"] {
+            position: absolute;
+            top: 0;
+            right: 0;
+            min-width: 100%;
+            min-height: 100%;
+            font-size: 100px;
+            text-align: right;
+            filter: alpha(opacity=0);
+            opacity: 0;
+            outline: none;
+            cursor: inherit;
+            display: block;
+        }
+        .modal-overlay {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- Button to trigger modals (for demo purposes) -->
+    <div class="container mx-auto p-8 flex space-x-4">
+        <button id="open-new-modal-btn" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg flex items-center">
+            <i class="fas fa-plus mr-2"></i> Nuevo Predio
+        </button>
+        <button id="open-edit-modal-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg flex items-center">
+            <i class="fas fa-edit mr-2"></i> Editar Predio
+        </button>
+    </div>
+
+    <!-- New Property Modal -->
+    <div id="new-property-modal" class="fixed inset-0 modal-overlay flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-screen overflow-y-auto">
+            <div class="border-b px-6 py-4 flex justify-between items-center">
+                <h3 class="text-lg font-semibold text-gray-800 flex items-center">
+                    <i class="fas fa-plus-circle text-green-500 mr-2"></i> Nuevo Predio
+                </h3>
+                <button id="close-new-modal" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <div class="p-6">
+                <form id="new-property-form" class="space-y-6">
+                    <!-- Información básica del predio -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Nombre del Predio*</label>
+                            <input type="text" id="new-property-name" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Modelo de Compras*</label>
+                            <select id="new-purchase-model" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" required>
+                                <option value="Propietario">Propietario</option>
+                                <option value="Intermediario">Intermediario</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Rol del Predio*</label>
+                            <input type="text" id="new-property-rol" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">RUT Propietario*</label>
+                            <input type="text" id="new-owner-rut" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Nombre Propietario*</label>
+                            <input type="text" id="new-owner-name" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Certificaciones Ambientales</label>
+                            <div class="space-y-2">
+                                <div class="flex items-center">
+                                    <input type="checkbox" id="new-cert-fsc" class="mr-2 certification-checkbox h-5 w-5 text-green-600 rounded focus:ring-green-500">
+                                    <label for="new-cert-fsc" class="text-gray-700">Certificación FSC</label>
+                                    <input type="text" id="new-cert-fsc-code" class="ml-2 px-2 py-1 border rounded-lg cert-code-input hidden w-32" placeholder="Código FSC">
+                                </div>
+                                <div class="flex items-center">
+                                    <input type="checkbox" id="new-cert-pefc" class="mr-2 certification-checkbox h-5 w-5 text-green-600 rounded focus:ring-green-500">
+                                    <label for="new-cert-pefc" class="text-gray-700">Certificación PEFC</label>
+                                    <input type="text" id="new-cert-pefc-code" class="ml-2 px-2 py-1 border rounded-lg cert-code-input hidden w-32" placeholder="Código PEFC">
+                                </div>
+                                <div class="flex items-center">
+                                    <input type="checkbox" id="new-cert-none" class="mr-2 certification-checkbox h-5 w-5 text-green-600 rounded focus:ring-green-500">
+                                    <label for="new-cert-none" class="text-gray-700">Sin Certificación</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Información del intermediario (oculto por defecto) -->
+                    <div id="new-intermediary-section" class="hidden bg-gray-50 p-4 rounded-lg">
+                        <h4 class="font-medium text-gray-700 mb-3 flex items-center">
+                            <i class="fas fa-user-tie mr-2 text-green-500"></i> Información del Intermediario
+                        </h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Nombre Intermediario*</label>
+                                <input type="text" id="new-intermediary-name" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">RUT Intermediario*</label>
+                                <input type="text" id="new-intermediary-rut" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Documentación Adjunta -->
+                    <div>
+                        <h4 class="font-medium text-gray-700 mb-3 flex items-center">
+                            <i class="fas fa-file-alt mr-2 text-green-500"></i> Documentación Adjunta
+                        </h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Plan de Manejo</label>
+                                <div class="file-upload border border-dashed border-gray-300 rounded-lg p-4 text-center hover:bg-gray-50 transition-colors">
+                                    <div class="flex justify-center">
+                                        <i class="fas fa-cloud-upload-alt text-4xl text-green-500"></i>
+                                    </div>
+                                    <p class="mt-2 text-sm text-gray-600">Arrastra o selecciona archivo</p>
+                                    <input type="file" class="hidden">
+                                    <p id="new-plan-file-name" class="mt-1 text-xs text-gray-500 hidden"></p>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Factura Compra Propietario</label>
+                                <div class="file-upload border border-dashed border-gray-300 rounded-lg p-4 text-center hover:bg-gray-50 transition-colors">
+                                    <div class="flex justify-center">
+                                        <i class="fas fa-cloud-upload-alt text-4xl text-green-500"></i>
+                                    </div>
+                                    <p class="mt-2 text-sm text-gray-600">Arrastra o selecciona archivo</p>
+                                    <input type="file" class="hidden">
+                                    <p id="new-invoice-file-name" class="mt-1 text-xs text-gray-500 hidden"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-end space-x-3">
+                        <button type="button" id="cancel-new-property" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-medium py-2 px-6 rounded-lg transition-colors">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-6 rounded-lg transition-colors flex items-center">
+                            <i class="fas fa-save mr-2"></i> Crear Predio
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Property Modal -->
+    <div id="edit-property-modal" class="fixed inset-0 modal-overlay flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-screen overflow-y-auto">
+            <div class="border-b px-6 py-4 flex justify-between items-center">
+                <h3 class="text-lg font-semibold text-gray-800 flex items-center">
+                    <i class="fas fa-edit text-blue-500 mr-2"></i> Editar Predio
+                </h3>
+                <button id="close-edit-modal" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <div class="p-6">
+                <form id="edit-property-form" class="space-y-6" data-property-id="v3nNkNk5AfpevdpXyxme">
+                    <!-- Información básica del predio -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Nombre del Predio*</label>
+                            <input type="text" id="edit-property-name" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Modelo de Compras*</label>
+                            <select id="edit-purchase-model" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                                <option value="Propietario">Propietario</option>
+                                <option value="Intermediario">Intermediario</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Rol del Predio*</label>
+                            <input type="text" id="edit-property-rol" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">RUT Propietario*</label>
+                            <input type="text" id="edit-owner-rut" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Nombre Propietario*</label>
+                            <input type="text" id="edit-owner-name" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Certificaciones Ambientales</label>
+                            <div class="space-y-2">
+                                <div class="flex items-center">
+                                    <input type="checkbox" id="edit-cert-fsc" class="mr-2 certification-checkbox h-5 w-5 text-blue-600 rounded focus:ring-blue-500">
+                                    <label for="edit-cert-fsc" class="text-gray-700">Certificación FSC</label>
+                                    <input type="text" id="edit-cert-fsc-code" class="ml-2 px-2 py-1 border rounded-lg cert-code-input hidden w-32" placeholder="Código FSC">
+                                </div>
+                                <div class="flex items-center">
+                                    <input type="checkbox" id="edit-cert-pefc" class="mr-2 certification-checkbox h-5 w-5 text-blue-600 rounded focus:ring-blue-500">
+                                    <label for="edit-cert-pefc" class="text-gray-700">Certificación PEFC</label>
+                                    <input type="text" id="edit-cert-pefc-code" class="ml-2 px-2 py-1 border rounded-lg cert-code-input hidden w-32" placeholder="Código PEFC">
+                                </div>
+                                <div class="flex items-center">
+                                    <input type="checkbox" id="edit-cert-none" class="mr-2 certification-checkbox h-5 w-5 text-blue-600 rounded focus:ring-blue-500">
+                                    <label for="edit-cert-none" class="text-gray-700">Sin Certificación</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Información del intermediario (oculto por defecto) -->
+                    <div id="edit-intermediary-section" class="hidden bg-gray-50 p-4 rounded-lg">
+                        <h4 class="font-medium text-gray-700 mb-3 flex items-center">
+                            <i class="fas fa-user-tie mr-2 text-blue-500"></i> Información del Intermediario
+                        </h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Nombre Intermediario*</label>
+                                <input type="text" id="edit-intermediary-name" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">RUT Intermediario*</label>
+                                <input type="text" id="edit-intermediary-rut" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Documentación Adjunta -->
+                    <div>
+                        <h4 class="font-medium text-gray-700 mb-3 flex items-center">
+                            <i class="fas fa-file-alt mr-2 text-blue-500"></i> Documentación Adjunta
+                        </h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Plan de Manejo</label>
+                                <div class="file-upload border border-dashed border-gray-300 rounded-lg p-4 text-center hover:bg-gray-50 transition-colors">
+                                    <div class="flex justify-center">
+                                        <i class="fas fa-cloud-upload-alt text-4xl text-blue-500"></i>
+                                    </div>
+                                    <p class="mt-2 text-sm text-gray-600">Arrastra o selecciona archivo</p>
+                                    <input type="file" class="hidden">
+                                    <p id="plan-file-name" class="mt-1 text-xs text-gray-500 hidden"></p>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Factura Compra Propietario</label>
+                                <div class="file-upload border border-dashed border-gray-300 rounded-lg p-4 text-center hover:bg-gray-50 transition-colors">
+                                    <div class="flex justify-center">
+                                        <i class="fas fa-cloud-upload-alt text-4xl text-blue-500"></i>
+                                    </div>
+                                    <p class="mt-2 text-sm text-gray-600">Arrastra o selecciona archivo</p>
+                                    <input type="file" class="hidden">
+                                    <p id="invoice-file-name" class="mt-1 text-xs text-gray-500 hidden"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-end space-x-3">
+                        <button type="button" id="cancel-edit-property" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-medium py-2 px-6 rounded-lg transition-colors">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition-colors flex items-center">
+                            <i class="fas fa-save mr-2"></i> Guardar Predio
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Modal toggle functionality
+            const newModal = document.getElementById('new-property-modal');
+            const editModal = document.getElementById('edit-property-modal');
+            const openNewModalBtn = document.getElementById('open-new-modal-btn');
+            const openEditModalBtn = document.getElementById('open-edit-modal-btn');
+            const closeNewModalBtn = document.getElementById('close-new-modal');
+            const closeEditModalBtn = document.getElementById('close-edit-modal');
+            const cancelNewBtn = document.getElementById('cancel-new-property');
+            const cancelEditBtn = document.getElementById('cancel-edit-property');
+            
+            // Open modals
+            if (openNewModalBtn) {
+                openNewModalBtn.addEventListener('click', () => {
+                    newModal.classList.remove('hidden');
+                });
+            }
+            
+            if (openEditModalBtn) {
+                openEditModalBtn.addEventListener('click', () => {
+                    editModal.classList.remove('hidden');
+                });
+            }
+            
+            // Close modals
+            const closeNewModal = () => {
+                newModal.classList.add('hidden');
+            };
+            
+            const closeEditModal = () => {
+                editModal.classList.add('hidden');
+            };
+            
+            if (closeNewModalBtn) closeNewModalBtn.addEventListener('click', closeNewModal);
+            if (closeEditModalBtn) closeEditModalBtn.addEventListener('click', closeEditModal);
+            if (cancelNewBtn) cancelNewBtn.addEventListener('click', closeNewModal);
+            if (cancelEditBtn) cancelEditBtn.addEventListener('click', closeEditModal);
+            
+            // Function to handle purchase model change (for both modals)
+            function setupPurchaseModelHandler(prefix) {
+                const purchaseModelSelect = document.getElementById(`${prefix}-purchase-model`);
+                const intermediarySection = document.getElementById(`${prefix}-intermediary-section`);
+                
+                if (purchaseModelSelect && intermediarySection) {
+                    purchaseModelSelect.addEventListener('change', function() {
+                        if (this.value === 'Intermediario') {
+                            intermediarySection.classList.remove('hidden');
+                            document.getElementById(`${prefix}-intermediary-name`).required = true;
+                            document.getElementById(`${prefix}-intermediary-rut`).required = true;
+                        } else {
+                            intermediarySection.classList.add('hidden');
+                            document.getElementById(`${prefix}-intermediary-name`).required = false;
+                            document.getElementById(`${prefix}-intermediary-rut`).required = false;
+                        }
+                    });
+                }
+            }
+            
+            // Function to handle certification checkboxes (for both modals)
+            function setupCertificationHandlers(prefix) {
+                const certCheckboxes = document.querySelectorAll(`#${prefix}-property-form .certification-checkbox`);
+                const fscCheckbox = document.getElementById(`${prefix}-cert-fsc`);
+                const pefcCheckbox = document.getElementById(`${prefix}-cert-pefc`);
+                const noneCheckbox = document.getElementById(`${prefix}-cert-none`);
+                const fscCodeInput = document.getElementById(`${prefix}-cert-fsc-code`);
+                const pefcCodeInput = document.getElementById(`${prefix}-cert-pefc-code`);
+                
+                certCheckboxes.forEach(checkbox => {
+                    checkbox.addEventListener('change', function() {
+                        // Handle "None" checkbox
+                        if (this.id === `${prefix}-cert-none` && this.checked) {
+                            fscCheckbox.checked = false;
+                            pefcCheckbox.checked = false;
+                            fscCodeInput.classList.add('hidden');
+                            pefcCodeInput.classList.add('hidden');
+                            return;
+                        }
+                        
+                        // Uncheck "None" if any other checkbox is checked
+                        if (this.id !== `${prefix}-cert-none` && this.checked) {
+                            noneCheckbox.checked = false;
+                        }
+                        
+                        // Toggle code inputs based on checkbox state
+                        if (this.id === `${prefix}-cert-fsc`) {
+                            this.checked ? fscCodeInput.classList.remove('hidden') : fscCodeInput.classList.add('hidden');
+                        }
+                        
+                        if (this.id === `${prefix}-cert-pefc`) {
+                            this.checked ? pefcCodeInput.classList.remove('hidden') : pefcCodeInput.classList.add('hidden');
+                        }
+                        
+                        // If all checkboxes are unchecked, check "None"
+                        if (!fscCheckbox.checked && !pefcCheckbox.checked && !noneCheckbox.checked) {
+                            noneCheckbox.checked = true;
+                        }
+                    });
+                });
+            }
+            
+            // Function to handle file uploads (for both modals)
+            function setupFileUploadHandlers(prefix) {
+                const fileUploads = document.querySelectorAll(`#${prefix}-property-form .file-upload`);
+                fileUploads.forEach(upload => {
+                    const fileInput = upload.querySelector('input[type="file"]');
+                    const fileNameDisplay = upload.querySelector('p[id$="file-name"]');
+                    
+                    upload.addEventListener('click', () => fileInput.click());
+                    
+                    fileInput.addEventListener('change', function() {
+                        if (this.files.length > 0) {
+                            fileNameDisplay.textContent = this.files[0].name;
+                            fileNameDisplay.classList.remove('hidden');
+                        } else {
+                            fileNameDisplay.classList.add('hidden');
+                        }
+                    });
+                    
+                    // Drag and drop functionality
+                    upload.addEventListener('dragover', (e) => {
+                        e.preventDefault();
+                        upload.classList.add('border-blue-500', 'bg-blue-50');
+                    });
+                    
+                    upload.addEventListener('dragleave', () => {
+                        upload.classList.remove('border-blue-500', 'bg-blue-50');
+                    });
+                    
+                    upload.addEventListener('drop', (e) => {
+                        e.preventDefault();
+                        upload.classList.remove('border-blue-500', 'bg-blue-50');
+                        
+                        if (e.dataTransfer.files.length > 0) {
+                            fileInput.files = e.dataTransfer.files;
+                            fileNameDisplay.textContent = fileInput.files[0].name;
+                            fileNameDisplay.classList.remove('hidden');
+                        }
+                    });
+                });
+            }
+            
+            // Setup handlers for new property modal
+            setupPurchaseModelHandler('new');
+            setupCertificationHandlers('new');
+            setupFileUploadHandlers('new');
+            
+            // Setup handlers for edit property modal
+            setupPurchaseModelHandler('edit');
+            setupCertificationHandlers('edit');
+            setupFileUploadHandlers('edit');
+            
+            // Form submissions
+            const newForm = document.getElementById('new-property-form');
+            if (newForm) {
+                newForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    alert('Nuevo predio creado correctamente');
+                    closeNewModal();
+                });
+            }
+            
+            const editForm = document.getElementById('edit-property-form');
+            if (editForm) {
+                editForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    alert('Predio actualizado correctamente');
+                    closeEditModal();
+                });
+            }
+        });
+    </script>
+</body>
+</html>

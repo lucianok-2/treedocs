@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Predios</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .document-preview {
+            transition: all 0.3s ease;
+        }
+        .document-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .sidebar {
+            transition: all 0.3s ease;
+        }
+        @media (max-width: 768px) {
+            .document-container {
+                flex-direction: column;
+            }
+            .document-preview {
+                width: 100%;
+            }
+            .document-info {
+                width: 100%;
+                margin-top: 20px;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans">
+    <!-- Header -->
+    <header class="bg-blue-700 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-6">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-2xl font-bold">Gestión de Predios</h1>
+                    <p class="text-blue-200">Administración de propiedades y documentos</p>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="relative">
+                        <input type="text" placeholder="Buscar predio..." class="py-2 px-4 pr-10 rounded-full text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <i class="fas fa-search absolute right-3 top-3 text-gray-500"></i>
+                    </div>
+                    <button class="bg-blue-600 hover:bg-blue-800 px-4 py-2 rounded-full flex items-center">
+                        <i class="fas fa-plus mr-2"></i> Nuevo Predio
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- Filtros -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <div class="flex flex-wrap items-center justify-between gap-4">
+                <div class="flex items-center space-x-4">
+                    <span class="font-medium">Filtrar:</span>
+                    <select class="border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option>Todos los predios</option>
+                        <option>Con documentos pendientes</option>
+                        <option>Con documentos completos</option>
+                    </select>
+                    <select class="border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option>Ordenar por</option>
+                        <option>Nombre (A-Z)</option>
+                        <option>Nombre (Z-A)</option>
+                        <option>Fecha más reciente</option>
+                    </select>
+                </div>
+                <div>
+                    <span class="text-gray-600">Mostrando 8 de 24 predios</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Listado de Predios -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <!-- Tarjeta de Predio 1 -->
+            <div class="document-card bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer" onclick="openProperty('predio-1')">
+                <div class="relative">
+                    <img src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80" alt="Predio" class="w-full h-48 object-cover">
+                    <div class="absolute top-2 right-2 bg-blue-600 text-white px-2 py-1 rounded-full text-xs font-bold">Activo</div>
+                </div>
+                <div class="p-6">
+                    <div class="flex justify-between items-start mb-2">
+                        <h3 class="text-xl font-bold text-gray-800">Predio Las Acacias</h3>
+                        <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">RUT-12345678-9</span>
+                    </div>
+                    <p class="text-gray-600 mb-4">Calle Principal #123, Santiago</p>
+                    
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <span class="text-sm text-gray-500">Documentos:</span>
+                            <span class="ml-2 font-medium">5/8</span>
+                        </div>
+                        <div class="flex space-x-1">
+                            <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">Completos</span>
+                            <span class="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full">2 Pendientes</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tarjeta de Predio 2 -->
+            <div class="document-card bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer" onclick="openProperty('predio-2')">
+                <div class="relative">
+                    <img src="https://images.unsplash.com/photo-1580587771525-78b9dba3b914?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80" alt="Predio" class="w-full h-48 object-cover">
+                    <div class="absolute top-2 right-2 bg-yellow-500 text-white px-2 py-1 rounded-full text-xs font-bold">En revisión</div>
+                </div>
+                <div class="p-6">
+                    <div class="flex justify-between items-start mb-2">
+                        <h3 class="text-xl font-bold text-gray-800">Villa Los Pinos</h3>
+                        <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">RUT-98765432-1</span>
+                    </div>
+                    <p class="text-gray-600 mb-4">Avenida Central #456, Valparaíso</p>
+                    
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <span class="text-sm text-gray-500">Documentos:</span>
+                            <span class="ml-2 font-medium">3/8</span>
+                        </div>
+                        <div class="flex space-x-1">
+                            <span class="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">5 Pendientes</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tarjeta de Predio 3 -->
+            <div class="document-card bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer" onclick="openProperty('predio-3')">
+                <div class="relative">
+                    <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80" alt="Predio" class="w-full h-48 object-cover">
+                    <div class="absolute top-2 right-2 bg-green-600 text-white px-2 py-1 rounded-full text-xs font-bold">Aprobado</div>
+                </div>
+                <div class="p-6">
+                    <div class="flex justify-between items-start mb-2">
+                        <h3 class="text-xl font-bold text-gray-800">Hacienda San Pedro</h3>
+                        <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">RUT-45678912-3</span>
+                    </div>
+                    <p class="text-gray-600 mb-4">Camino Rural #789, Rancagua</p>
+                    
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <span class="text-sm text-gray-500">Documentos:</span>
+                            <span class="ml-2 font-medium">8/8</span>
+                        </div>
+                        <div class="flex space-x-1">
+                            <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">Completos</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tarjeta de Predio 4 -->
+            <div class="document-card bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer" onclick="openProperty('predio-4')">
+                <div class="relative">
+                    <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80" alt="Predio" class="w-full h-48 object-cover">
+                    <div class="absolute top-2 right-2 bg-red-600 text-white px-2 py-1 rounded-full text-xs font-bold">Inactivo</div>
+                </div>
+                <div class="p-6">
+                    <div class="flex justify-between items-start mb-2">
+                        <h3 class="text-xl font-bold text-gray-800">Condominio Los Olivos</h3>
+                        <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">RUT-32165498-7</span>
+                    </div>
+                    <p class="text-gray-600 mb-4">Pasaje Privado #321, Concepción</p>
+                    
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <span class="text-sm text-gray-500">Documentos:</span>
+                            <span class="ml-2 font-medium">1/8</span>
+                        </div>
+                        <div class="flex space-x-1">
+                            <span class="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">7 Pendientes</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Paginación -->
+        <div class="flex justify-center mt-10">
+            <nav class="flex items-center space-x-1">
+                <button class="px-3 py-1 rounded-full border text-gray-500 hover:bg-blue-50">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <button class="px-3 py-1 rounded-full border bg-blue-600 text-white">1</button>
+                <button class="px-3 py-1 rounded-full border text-gray-700 hover:bg-blue-50">2</button>
+                <button class="px-3 py-1 rounded-full border text-gray-700 hover:bg-blue-50">3</button>
+                <span class="px-2">...</span>
+                <button class="px-3 py-1 rounded-full border text-gray-700 hover:bg-blue-50">8</button>
+                <button class="px-3 py-1 rounded-full border text-gray-500 hover:bg-blue-50">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </nav>
+        </div>
+    </main>
+
+    <!-- Modal Vista de Predio y Documentos -->
+    <div id="propertyModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden overflow-y-auto">
+        <div class="container mx-auto p-4 max-w-6xl">
+            <div class="bg-white rounded-xl shadow-2xl overflow-hidden">
+                <!-- Header del Modal -->
+                <div class="bg-blue-700 text-white p-6 flex justify-between items-center">
+                    <div>
+                        <h2 id="modalPropertyTitle" class="text-2xl font-bold">Predio Las Acacias</h2>
+                        <p id="modalPropertyAddress" class="text-blue-200">Calle Principal #123, Santiago</p>
+                    </div>
+                    <button onclick="closePropertyModal()" class="text-white hover:text-blue-200 text-2xl">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <!-- Contenido del Modal -->
+                <div class="p-6">
+                    <!-- Resumen del Predio -->
+                    <div class="bg-blue-50 rounded-lg p-4 mb-6">
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div>
+                                <p class="text-sm text-gray-500">RUT</p>
+                                <p class="font-medium" id="modalPropertyRut">RUT-12345678-9</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">Estado</p>
+                                <p class="font-medium"><span class="bg-blue-600 text-white px-2 py-1 rounded-full text-xs">Activo</span></p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">Superficie</p>
+                                <p class="font-medium">5,200 m²</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">Documentos</p>
+                                <p class="font-medium">5/8 completos</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Documentos del Predio -->
+                    <div class="flex flex-col md:flex-row gap-6 document-container">
+                        <!-- Listado de Documentos -->
+                        <div class="w-full md:w-1/3">
+                            <div class="bg-white border rounded-lg shadow-sm overflow-hidden">
+                                <div class="bg-gray-50 px-4 py-3 border-b flex justify-between items-center">
+                                    <h3 class="font-bold text-gray-800">Documentos del Predio</h3>
+                                    <button class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                                        <i class="fas fa-plus mr-1"></i> Agregar
+                                    </button>
+                                </div>
+                                <div class="divide-y">
+                                    <!-- Documento 1 -->
+                                    <div class="p-4 hover:bg-blue-50 cursor-pointer border-l-4 border-blue-600" onclick="showDocument('doc-1')">
+                                        <div class="flex justify-between items-start">
+                                            <div>
+                                                <h4 class="font-medium text-gray-800">Plan de Uso de Suelo</h4>
+                                                <p class="text-sm text-gray-500">Aprobado</p>
+                                            </div>
+                                            <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">Completo</span>
+                                        </div>
+                                        <div class="flex items-center mt-2 text-sm text-gray-500">
+                                            <i class="fas fa-calendar-alt mr-2"></i>
+                                            <span>15/03/2023</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Documento 2 -->
+                                    <div class="p-4 hover:bg-blue-50 cursor-pointer border-l-4 border-yellow-400" onclick="showDocument('doc-2')">
+                                        <div class="flex justify-between items-start">
+                                            <div>
+                                                <h4 class="font-medium text-gray-800">Permiso de Construcción</h4>
+                                                <p class="text-sm text-gray-500">En revisión</p>
+                                            </div>
+                                            <span class="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full">Pendiente</span>
+                                        </div>
+                                        <div class="flex items-center mt-2 text-sm text-gray-500">
+                                            <i class="fas fa-calendar-alt mr-2"></i>
+                                            <span>28/04/2023</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Documento 3 -->
+                                    <div class="p-4 hover:bg-blue-50 cursor-pointer border-l-4 border-blue-600" onclick="showDocument('doc-3')">
+                                        <div class="flex justify-between items-start">
+                                            <div>
+                                                <h4 class="font-medium text-gray-800">Estudio de Impacto Ambiental</h4>
+                                                <p class="text-sm text-gray-500">Aprobado</p>
+                                            </div>
+                                            <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">Completo</span>
+                                        </div>
+                                        <div class="flex items-center mt-2 text-sm text-gray-500">
+                                            <i class="fas fa-calendar-alt mr-2"></i>
+                                            <span>10/02/2023</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Documento 4 -->
+                                    <div class="p-4 hover:bg-blue-50 cursor-pointer border-l-4 border-red-400" onclick="showDocument('doc-4')">
+                                        <div class="flex justify-between items-start">
+                                            <div>
+                                                <h4 class="font-medium text-gray-800">Certificado de Habilitación</h4>
+                                                <p class="text-sm text-gray-500">Rechazado</p>
+                                            </div>
+                                            <span class="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">Faltante</span>
+                                        </div>
+                                        <div class="flex items-center mt-2 text-sm text-gray-500">
+                                            <i class="fas fa-calendar-alt mr-2"></i>
+                                            <span>05/05/2023</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Vista Previa del Documento -->
+                        <div class="w-full md:w-2/3">
+                            <div class="bg-white border rounded-lg shadow-sm overflow-hidden h-full">
+                                <div class="bg-gray-50 px-4 py-3 border-b">
+                                    <h3 class="font-bold text-gray-800" id="documentTitle">Vista Previa del Documento</h3>
+                                </div>
+                                
+                                <div class="flex flex-col lg:flex-row h-full">
+                                    <!-- Previsualización del documento -->
+                                    <div class="document-preview w-full lg:w-2/3 p-4 bg-gray-100 flex items-center justify-center">
+                                        <div class="text-center">
+                                            <i class="fas fa-file-pdf text-6xl text-red-500 mb-4" id="documentIcon"></i>
+                                            <p class="text-gray-600" id="documentMessage">Seleccione un documento para previsualizarlo</p>
+                                            <div id="documentPreviewContent" class="hidden">
+                                                <iframe src="" class="w-full h-96 border" id="documentIframe"></iframe>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Información del documento -->
+                                    <div class="document-info w-full lg:w-1/3 p-4 bg-white border-l">
+                                        <h4 class="font-bold text-gray-800 mb-4">Detalles del Documento</h4>
+                                        
+                                        <div class="space-y-4" id="documentDetails">
+                                            <div>
+                                                <p class="text-sm text-gray-500">Tipo de documento</p>
+                                                <p class="font-medium" id="docType">-</p>
+                                            </div>
+                                            <div>
+                                                <p class="text-sm text-gray-500">Estado</p>
+                                                <p class="font-medium" id="docStatus">-</p>
+                                            </div>
+                                            <div>
+                                                <p class="text-sm text-gray-500">Fecha de creación</p>
+                                                <p class="font-medium" id="docDate">-</p>
+                                            </div>
+                                            <div>
+                                                <p class="text-sm text-gray-500">RUT asociado</p>
+                                                <p class="font-medium" id="docRut">-</p>
+                                            </div>
+                                            <div>
+                                                <p class="text-sm text-gray-500">Responsable</p>
+                                                <p class="font-medium" id="docResponsible">-</p>
+                                            </div>
+                                            <div>
+                                                <p class="text-sm text-gray-500">Observaciones</p>
+                                                <p class="font-medium" id="docNotes">-</p>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="mt-6 pt-4 border-t">
+                                            <button class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg flex items-center justify-center">
+                                                <i class="fas fa-download mr-2"></i> Descargar Documento
+                                            </button>
+                                            <button class="w-full mt-2 bg-white border border-blue-600 text-blue-600 hover:bg-blue-50 py-2 px-4 rounded-lg flex items-center justify-center">
+                                                <i class="fas fa-share-alt mr-2"></i> Compartir
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Footer del Modal -->
+                <div class="bg-gray-50 px-6 py-4 border-t flex justify-between">
+                    <button class="text-gray-600 hover:text-gray-800 font-medium">
+                        <i class="fas fa-history mr-2"></i> Ver historial de cambios
+                    </button>
+                    <div class="space-x-3">
+                        <button class="bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 px-4 rounded-lg">
+                            Cerrar
+                        </button>
+                        <button class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg">
+                            <i class="fas fa-save mr-2"></i> Guardar cambios
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Función para abrir el modal del predio
+        function openProperty(propertyId) {
+            // Aquí podrías cargar datos reales según el propertyId
+            document.getElementById('propertyModal').classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+            
+            // Simulamos carga de datos del predio seleccionado
+            if(propertyId === 'predio-1') {
+                document.getElementById('modalPropertyTitle').textContent = 'Predio Las Acacias';
+                document.getElementById('modalPropertyAddress').textContent = 'Calle Principal #123, Santiago';
+                document.getElementById('modalPropertyRut').textContent = 'RUT-12345678-9';
+            } else if(propertyId === 'predio-2') {
+                document.getElementById('modalPropertyTitle').textContent = 'Villa Los Pinos';
+                document.getElementById('modalPropertyAddress').textContent = 'Avenida Central #456, Valparaíso';
+                document.getElementById('modalPropertyRut').textContent = 'RUT-98765432-1';
+            }
+            // ... otros predios
+        }
+        
+        // Función para cerrar el modal
+        function closePropertyModal() {
+            document.getElementById('propertyModal').classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        }
+        
+        // Función para mostrar un documento específico
+        function showDocument(docId) {
+            // Resetear todos los documentos
+            document.querySelectorAll('.document-card').forEach(el => {
+                el.classList.remove('bg-blue-50');
+            });
+            
+            // Resaltar el documento seleccionado
+            event.currentTarget.classList.add('bg-blue-50');
+            
+            // Mostrar información del documento seleccionado
+            const docTitle = document.getElementById('documentTitle');
+            const docIcon = document.getElementById('documentIcon');
+            const docMessage = document.getElementById('documentMessage');
+            const docPreview = document.getElementById('documentPreviewContent');
+            
+            // Ocultar el mensaje predeterminado
+            docMessage.classList.add('hidden');
+            docPreview.classList.remove('hidden');
+            
+            // Actualizar detalles del documento
+            if(docId === 'doc-1') {
+                docTitle.textContent = 'Plan de Uso de Suelo';
+                docIcon.className = 'fas fa-file-pdf text-6xl text-red-500 mb-4';
+                document.getElementById('docType').textContent = 'Plan de Uso de Suelo';
+                document.getElementById('docStatus').innerHTML = '<span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">Aprobado</span>';
+                document.getElementById('docDate').textContent = '15/03/2023';
+                document.getElementById('docRut').textContent = 'RUT-12345678-9';
+                document.getElementById('docResponsible').textContent = 'Juan Pérez';
+                document.getElementById('docNotes').textContent = 'Documento completo y aprobado por municipalidad';
+                document.getElementById('documentIframe').src = 'https://example.com/document1.pdf';
+            } else if(docId === 'doc-2') {
+                docTitle.textContent = 'Permiso de Construcción';
+                docIcon.className = 'fas fa-file-word text-6xl text-blue-500 mb-4';
+                document.getElementById('docType').textContent = 'Permiso de Construcción';
+                document.getElementById('docStatus').innerHTML = '<span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs">En revisión</span>';
+                document.getElementById('docDate').textContent = '28/04/2023';
+                document.getElementById('docRut').textContent = 'RUT-12345678-9';
+                document.getElementById('docResponsible').textContent = 'María González';
+                document.getElementById('docNotes').textContent = 'Falta firma del arquitecto responsable';
+                document.getElementById('documentIframe').src = 'https://example.com/document2.docx';
+            }
+            // ... otros documentos
+        }
+        
+        // Cerrar modal al hacer clic fuera del contenido
+        document.getElementById('propertyModal').addEventListener('click', function(e) {
+            if(e.target === this) {
+                closePropertyModal();
+            }
+        });
+        
+        // Cerrar con tecla ESC
+        document.addEventListener('keydown', function(e) {
+            if(e.key === 'Escape') {
+                closePropertyModal();
+            }
+        });
+    </script>
+</body>
+</html>

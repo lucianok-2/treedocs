@@ -1,0 +1,98 @@
+{{!< layouts/main }}
+<div id="register-screen" class="min-h-screen flex items-center justify-center p-4">
+  <div class="bg-white rounded-lg shadow-xl overflow-hidden w-full max-w-md">
+    <div class="bg-blue-600 py-6 px-8 text-center">
+      <h1 class="text-2xl font-bold text-white">Sistema de Gestión Documental</h1>
+      <p class="text-blue-100 mt-2">Registro de Nuevo Usuario</p>
+    </div>
+    <div class="p-8">
+      <form id="register-form">
+        <div class="mb-4">
+          <label for="email" class="block text-gray-700 font-medium mb-2">Correo Electrónico</label>
+          <input type="email" id="email" class="w-full px-4 py-2 border rounded-lg" placeholder="Ingrese correo electrónico" required>
+        </div>
+        <div class="mb-4">
+          <label for="password" class="block text-gray-700 font-medium mb-2">Contraseña</label>
+          <input type="password" id="password" class="w-full px-4 py-2 border rounded-lg" placeholder="Ingrese contraseña" required>
+        </div>
+        <div class="mb-4">
+          <label for="confirm-password" class="block text-gray-700 font-medium mb-2">Confirmar Contraseña</label>
+          <input type="password" id="confirm-password" class="w-full px-4 py-2 border rounded-lg" placeholder="Confirme contraseña" required>
+        </div>
+        <div class="mb-4">
+          <label for="role" class="block text-gray-700 font-medium mb-2">Rol</label>
+          <select id="role" class="w-full px-4 py-2 border rounded-lg" required>
+            <option value="">Seleccione un rol</option>
+            <option value="admin">Administrador</option>
+            <option value="user">Usuario</option>
+          </select>
+        </div>
+        <div class="mb-6">
+          <label class="flex items-center">
+            <input type="checkbox" id="active" class="mr-2" checked>
+            <span class="text-gray-700">Usuario activo</span>
+          </label>
+        </div>
+        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg">Registrar Usuario</button>
+      </form>
+      <div class="mt-4 text-center">
+        <a href="/" class="text-blue-600 hover:underline">Volver al inicio de sesión</a>
+      </div>
+      <div id="message" class="mt-4 p-3 rounded-lg hidden"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.getElementById('register-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const email = document.getElementById('email').value.trim().toLowerCase();
+    const password = document.getElementById('password').value;
+    const confirmPassword = document.getElementById('confirm-password').value;
+    const role = document.getElementById('role').value;
+    const active = document.getElementById('active').checked;
+    const messageDiv = document.getElementById('message');
+    
+    // Validaciones básicas
+    if (password !== confirmPassword) {
+      messageDiv.textContent = 'Las contraseñas no coinciden';
+      messageDiv.className = 'mt-4 p-3 rounded-lg bg-red-100 text-red-700';
+      messageDiv.classList.remove('hidden');
+      return;
+    }
+    
+    try {
+      const response = await fetch('/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, role, active })
+      });
+      
+      const result = await response.json();
+      
+      if (response.ok) {
+        messageDiv.textContent = 'Usuario registrado correctamente';
+        messageDiv.className = 'mt-4 p-3 rounded-lg bg-green-100 text-green-700';
+        messageDiv.classList.remove('hidden');
+        
+        // Limpiar formulario
+        document.getElementById('register-form').reset();
+        
+        // Redireccionar después de 2 segundos
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 2000);
+      } else {
+        messageDiv.textContent = result.message || 'Error al registrar usuario';
+        messageDiv.className = 'mt-4 p-3 rounded-lg bg-red-100 text-red-700';
+        messageDiv.classList.remove('hidden');
+      }
+    } catch (error) {
+      messageDiv.textContent = 'Error al conectar con el servidor';
+      messageDiv.className = 'mt-4 p-3 rounded-lg bg-red-100 text-red-700';
+      messageDiv.classList.remove('hidden');
+      console.error('Error:', error);
+    }
+  });
+</script>
